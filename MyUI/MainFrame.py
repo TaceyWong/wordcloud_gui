@@ -23,7 +23,7 @@ from MyAbout import *
 # except:
 #     dirName = os.path.dirname(os.path.abspath(sys.argv[0]))
 
-bitmapDir = 'bitmaps/'
+
 
 
 try:
@@ -192,7 +192,7 @@ class LabelBookDemo(wx.Frame):
 
         imagelist = wx.ImageList(32, 32)
         for img in _pageIcons:
-            newImg = bitmapDir + "lb%s" % img
+            newImg = gl.BITMAP_DIR + "lb%s" % img
             bmp = wx.Bitmap(newImg, wx.BITMAP_TYPE_PNG)
             imagelist.Add(bmp)
 

@@ -45,6 +45,7 @@ print u"开始生成词云······"
 wordcloud = WordCloud(font_path='font/hysj.ttf',    background_color="black",   margin=5, width=1800, height=800) 
 
 wordcloud = wordcloud.generate(seg_list)
+
 #画图
 
 # wordcloud.save("test.png")

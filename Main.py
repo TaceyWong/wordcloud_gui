@@ -4,7 +4,7 @@ import wx
 import os
 
 from MyUI.MainFrame import *
-from Utils import DB, gl,check
+from Utils import gl
 #
 import sys
 reload(sys)
