@@ -102,7 +102,7 @@ class LabelBookDemo(wx.Frame):
         self.SetWindowStyle(wx.DEFAULT_FRAME_STYLE ^ (wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
         c_x, c_y, c_w, c_h = wx.ClientDisplayRect()
         print c_w, c_h, c_x, c_y
-        self.SetSize((1000, 700))
+        self.SetSize((900, 600))
         # self.splitter.SetMinimumPaneSize(0)
 
 

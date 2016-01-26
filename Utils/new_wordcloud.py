@@ -60,6 +60,7 @@ class MyWordCloud(object):
                               height=height)
 
         self.m_wordcloud = self.m_wordcloud.generate(seg_list)
+        return self.m_wordcloud
 
     # def Show(self,wordcloud = self.m_wordcloud):
     #     # pass
