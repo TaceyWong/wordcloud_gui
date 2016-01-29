@@ -83,14 +83,14 @@ class LabelBookDemo(wx.Frame):
         self.Bind(LB.EVT_IMAGENOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
 
     def OnPageChanged(self,event):
-        # pass
+        pass
         # if event.GetSelection() == 0:
         #     self.book.GetCurrentPage().test()
-        num = event.GetSelection()
-        if num == 2:
-            self.book.GetCurrentPage().update_corpus_Choice()
-        if num == 3:
-            self.book.GetCurrentPage().updatecorpus()
+        # num = event.GetSelection()
+        # if num == 2:
+        #     self.book.GetCurrentPage().update_corpus_Choice()
+        # if num == 3:
+        #     self.book.GetCurrentPage().updatecorpus()
 
 
     def SetProperties(self):
