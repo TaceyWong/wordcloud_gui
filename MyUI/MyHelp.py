@@ -2,7 +2,12 @@
 
 import wx
 
-__author__ = 'Administrator'
+__author__ = 'Tacey Wong'
+__date__   = "2016年元月"
+
+###########################################################################
+##帮助
+###########################################################################
 
 class MyHelp(wx.Panel):
     def __init__(self, parent):
@@ -13,7 +18,7 @@ class MyHelp(wx.Panel):
                                                     wx.TE_READONLY| wx.VSCROLL | wx.HSCROLL | wx.NO_BORDER | wx.WANTS_CHARS)
         bSizer1.Add(self.m_richText1, 1, wx.EXPAND | wx.ALL, 5)
 
-        self.m_hyperlink1 = wx.HyperlinkCtrl(self, wx.ID_ANY, u"Tacey 词云在线帮助文档", u"http://www.github.com/iTacey/wordcloud_gui",
+        self.m_hyperlink1 = wx.HyperlinkCtrl(self, wx.ID_ANY, u"Tacey 词云在线帮助文档", u"http://www.github.com/iTacey/wordcloud_gui/doc/online/help",
                                              wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE)
         bSizer1.Add(self.m_hyperlink1, 0, wx.ALL, 5)
 

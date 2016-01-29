@@ -1,5 +1,8 @@
 #coding: utf-8
- 
+
+__author__ = 'Tacey Wong'
+__date__   = "2016年元月"
+
 import os
 from os import path
 from PIL import Image

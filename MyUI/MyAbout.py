@@ -3,8 +3,8 @@
 import wx
 import wx.richtext
 
-__author__ = 'Administrator'
-
+__author__ = 'Tacey Wong'
+__date__   = "2016年元月"
 
 ###########################################################################
 ##关于
