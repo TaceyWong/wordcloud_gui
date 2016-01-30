@@ -13,7 +13,6 @@ import time
 import datetime
 from Utils import gl
 
-# from MyIndex import *
 from MyUI import *
 from MyNormal import *
 from MyText import *

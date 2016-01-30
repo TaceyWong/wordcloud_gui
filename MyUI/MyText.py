@@ -2,11 +2,11 @@
 
 import wx
 from Utils import gl, new_wordcloud
-import  cStringIO
+import cStringIO
 
 
 __author__ = 'Tacey Wong'
-__date__   = "2016年元月"
+__date__ = "2016年元月"
 
 
 ###########################################################################
@@ -104,12 +104,12 @@ class MyText(wx.Panel):
         self.Font_staticText.Wrap(-1)
         fgSizer3.Add(self.Font_staticText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT, 5)
 
-        self.Font_fontPicker = wx.FontPickerCtrl(sbSizer6.GetStaticBox(), wx.ID_ANY, wx.NullFont, wx.DefaultPosition,
-                                                 wx.DefaultSize, wx.FNTP_DEFAULT_STYLE)
-        self.Font_fontPicker.SetMaxPointSize(100)
-        self.Font_fontPicker.Disable()
-        fgSizer3.Add(self.Font_fontPicker, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
-
+        Font_ChoiceChoices = [u"汉仪瘦金书简"]
+        self.Font_Choice = wx.Choice(sbSizer6.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
+                                   Font_ChoiceChoices, 0)
+        self.Font_Choice.SetSelection(0)
+        fgSizer3.Add(self.Font_Choice, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
+        
         self.MaxFont_staticText = wx.StaticText(sbSizer6.GetStaticBox(), wx.ID_ANY, u"最大字体", wx.DefaultPosition,
                                                 wx.DefaultSize, 0)
         self.MaxFont_staticText.Wrap(-1)
@@ -241,11 +241,11 @@ class MyText(wx.Panel):
         stopwords = wc.StopWord(filename=stop_word_file)
         seg_list = wc.WordCut(self, stopwords, goal_file)
         mywordcloud = wc.GenWordCloud(self,
-                        seg_list=seg_list,
-                        font_path='font/hysj.ttf',
-                        background_color="black",
-                        margin=margin,
-                        width=width, height=height)
+                                      seg_list=seg_list,
+                                      font_path='font/hysj.ttf',
+                                      background_color="black",
+                                      margin=margin,
+                                      width=width, height=height)
         mywordcloud.to_file("to_file.png")
         try:
 
@@ -254,7 +254,7 @@ class MyText(wx.Panel):
             # convert to a data stream
             stream = cStringIO.StringIO(data)
             # convert to a bitmap
-            bmp = wx.BitmapFromImage( wx.ImageFromStream( stream ))
+            bmp = wx.BitmapFromImage(wx.ImageFromStream(stream))
             # show the bitmap, (5, 5) are upper left corner coordinates
             # wx.StaticBitmap(self, -1, bmp, (5, 5))
 
@@ -272,7 +272,7 @@ class MyText(wx.Panel):
         dlg = wx.MessageDialog(self, u'生成成功！',
                                u'处理结果!',
                                wx.OK | wx.ICON_INFORMATION  # wx.ICON_ERROR
-                               #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
+                               # wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
         )
         dlg.ShowModal()
         dlg.Destroy()
@@ -298,7 +298,7 @@ class MyText(wx.Panel):
         dlg = wx.MessageDialog(self, u'保存完成！',
                                u'处理结果!',
                                wx.OK | wx.ICON_INFORMATION  # wx.ICON_ERROR
-                               #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
+                               # wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
         )
         dlg.ShowModal()
         dlg.Destroy()
@@ -310,7 +310,8 @@ class MyText(wx.Panel):
         margin = self.Margin_spinCtrl.GetValue()
         width = self.Width_spinCtrl.GetValue()
         height = self.Height_spinCtrl.GetValue()
-        font = self.Font_fontPicker.GetSelectedFont()
+        # font = self.Font_fontPicker.GetSelectedFont()
+        font = self.Font_Choice.GetLabelText()
         font_max = self.MaxFont_spinCtrl.GetValue()
         font_min = self.MinFont_spinCtrl.GetValue()
         bg_color = self.BG_Color_colourPicker.GetColour()
