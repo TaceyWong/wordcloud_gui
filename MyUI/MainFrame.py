@@ -86,6 +86,9 @@ class LabelBookDemo(wx.Frame):
 
     def OnPageChanged(self,event):
         pass
+        print event.GetSelection()
+        self.book.GetCurrentPage().update_Choice()
+        print event.GetSelection()
         # if event.GetSelection() == 0:
         #     self.book.GetCurrentPage().test()
         # num = event.GetSelection()

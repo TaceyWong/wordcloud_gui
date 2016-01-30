@@ -3,6 +3,7 @@
 import wx
 from Utils import gl, new_wordcloud
 import  cStringIO
+import os
 
 
 __author__ = 'Tacey Wong'
@@ -19,7 +20,9 @@ class MyWeb(wx.Panel):
                           style=wx.TAB_TRAVERSAL)
 
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_INFOBK))
-
+        self.stop_word_file =None
+        self.goal_file = None
+        self.final_pic = None
         bSizer1 = wx.BoxSizer(wx.VERTICAL)
 
         sbSizer1 = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, u"词云配置"), wx.HORIZONTAL)
@@ -68,7 +71,7 @@ class MyWeb(wx.Panel):
         fgSizer2.Add(self.Margin_staticText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
         self.Margin_spinCtrl = wx.SpinCtrl(sbSizer5.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
-                                           wx.DefaultSize, wx.SP_ARROW_KEYS, 0, -1, 0)
+                                           wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 50, 0)
         fgSizer2.Add(self.Margin_spinCtrl, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
         self.Width_staticText = wx.StaticText(sbSizer5.GetStaticBox(), wx.ID_ANY, u"宽度", wx.DefaultPosition,
@@ -104,10 +107,10 @@ class MyWeb(wx.Panel):
         self.Font_staticText.Wrap(-1)
         fgSizer3.Add(self.Font_staticText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT, 5)
 
-        Font_ChoiceChoices = [u"汉仪瘦金书简"]
+        Font_ChoiceChoices = []
         self.Font_Choice = wx.Choice(sbSizer6.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize,
                                    Font_ChoiceChoices, 0)
-        self.Font_Choice.SetSelection(0)
+        self.update_Choice()
         fgSizer3.Add(self.Font_Choice, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
         self.MaxFont_staticText = wx.StaticText(sbSizer6.GetStaticBox(), wx.ID_ANY, u"最大字体", wx.DefaultPosition,
@@ -198,7 +201,7 @@ class MyWeb(wx.Panel):
 
         dlg = wx.FileDialog(
             self, message=u"选取停词表文档",
-            defaultDir=gl.CWD,
+            defaultDir=gl.CWD+u"\\data\\stopwords",
             defaultFile="",
             wildcard=wildcard,
             style=wx.OPEN | wx.CHANGE_DIR  # | wx.MULTIPLE
@@ -209,13 +212,14 @@ class MyWeb(wx.Panel):
         if dlg.ShowModal() == wx.ID_OK:
             # This returns a Python list of files that were selected.
             path = dlg.GetPath()  # GetPaths()
-        #
+            self.stop_word_file = path
+            self.StopWords_staticText.SetLabelText(path.split("\\")[-1])
         dlg.Destroy()
 
 
     def GoalFile_ButtonOnButtonClick(self, event):
         event.Skip()
-        wildcard = u"TXT纯文本 (*.txt)|*.txt"
+        wildcard = u"HTML文本 (*.html)|*.html"
 
         dlg = wx.FileDialog(
             self, message=u"选取词云生成目标文档",
@@ -230,6 +234,9 @@ class MyWeb(wx.Panel):
         if dlg.ShowModal() == wx.ID_OK:
             # This returns a Python list of files that were selected.
             path = dlg.GetPath()  # GetPaths()
+            self.goal_file = path
+            self.GoalFile_staticText.SetLabelText(path.split("\\")[-1])
+
         #
         dlg.Destroy()
 
@@ -237,24 +244,47 @@ class MyWeb(wx.Panel):
     def GenWordCloud_ButtonOnButtonClick(self, event):
         event.Skip()
         stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color = self.GetConf()
+        print stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color
+
+        if stop_word_file == None or goal_file == None :
+            dlg = wx.MessageDialog(self,u"请先选取停词表和目标文档",
+                                u"文件缺失",
+                               wx.OK | wx.ICON_INFORMATION#wx.ICON_ERROR
+                               #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
+                               )
+            dlg.ShowModal()
+            dlg.Destroy()
+            return 1
         wc = new_wordcloud.MyWordCloud()
+        from Utils import cleaner
+        html_text = cleaner.clean_html(open(goal_file).read())
+        output_file_name = gl.CWD+"\\data\\.catch\\tmp_file.txt"
+        goal_file = output_file_name
+        output_file_id = open(output_file_name,'w')
+        try:
+            output_file_id.write(html_text.strip())
+        except Exception,e:
+            print e
+        output_file_id.close()
+        stop_word_file = output_file_name
         stopwords = wc.StopWord(filename=stop_word_file)
-        seg_list = wc.WordCut(self, stopwords, goal_file)
-        mywordcloud = wc.GenWordCloud(self,
-                        seg_list=seg_list,
-                        font_path='font/hysj.ttf',
-                        background_color="black",
-                        margin=margin,
-                        width=width, height=height)
-        mywordcloud.to_file("to_file.png")
+        seg_list = wc.WordCut(stopwords, goal_file)
+        self.final_pic = wc.GenWordCloud(
+                                      seg_list=seg_list,
+                                      font_path=gl.CWD+u"//data//font//"+font+".ttf",
+                                      background_color=bg_color,
+                                      margin=margin,
+                                      width=width, height=height)
+
+        self.final_pic.to_file(gl.CWD+"\\data\\.catch\\"+"book_to_file.png")
         try:
 
-            imageFile = 'to_file.jpg'
+            imageFile = gl.CWD+"\\data\\.catch\\"+'book_to_file.png'
             data = open(imageFile, "rb").read()
             # convert to a data stream
             stream = cStringIO.StringIO(data)
             # convert to a bitmap
-            bmp = wx.BitmapFromImage( wx.ImageFromStream( stream ))
+            bmp = wx.BitmapFromImage(wx.ImageFromStream(stream))
             # show the bitmap, (5, 5) are upper left corner coordinates
             # wx.StaticBitmap(self, -1, bmp, (5, 5))
 
@@ -262,7 +292,8 @@ class MyWeb(wx.Panel):
             # actually you can load .jpg  .png  .bmp  or .gif files
             # jpg1 = wx.Image(imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
             # bitmap upper left corner is in the position tuple (x, y) = (5, 5)
-            self.PicShow_Bitmap(self, -1, bmp, (10 + bmp.GetWidth(), 5), (bmp.GetWidth(), bmp.GetHeight()))
+            self.PicShow_Bitmap.SetBitmap(bmp)
+            # self.PicShow_Bitmap(self, -1, bmp, (10 + bmp.GetWidth(), 5), (bmp.GetWidth(), bmp.GetHeight()))
         except IOError:
             print "Image file %s not found" % imageFile
             raise SystemExit
@@ -272,13 +303,22 @@ class MyWeb(wx.Panel):
         dlg = wx.MessageDialog(self, u'生成成功！',
                                u'处理结果!',
                                wx.OK | wx.ICON_INFORMATION  # wx.ICON_ERROR
-                               #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
+                               # wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
         )
         dlg.ShowModal()
         dlg.Destroy()
 
     def Save_ButtonOnButtonClick(self, event):
         event.Skip()
+        if self.final_pic == None:
+            dlg = wx.MessageDialog(self, u'您尚未生成词云！',
+                               u'错误信息!',
+                               wx.OK | wx.ICON_INFORMATION  # wx.ICON_ERROR
+                               # wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
+                                )
+            dlg.ShowModal()
+            dlg.Destroy()
+            return 1
         dlg = wx.FileDialog(
             self, message=u"保存单词云，请选择合适的格式", defaultDir=gl.CWD,
             defaultFile=u"MyWordCloud", wildcard=u"PNG图片 (*.png)|*.png", style=wx.SAVE
@@ -290,6 +330,7 @@ class MyWeb(wx.Panel):
         # process the data.
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
+            self.final_pic.to_file(path)
         else:
             return 0
 
@@ -298,22 +339,36 @@ class MyWeb(wx.Panel):
         dlg = wx.MessageDialog(self, u'保存完成！',
                                u'处理结果!',
                                wx.OK | wx.ICON_INFORMATION  # wx.ICON_ERROR
-                               #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
+                               # wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
         )
         dlg.ShowModal()
         dlg.Destroy()
 
     def GetConf(self):
         pass
-        stop_word_file = self.StopWords_staticText.GetLabelText()
-        goal_file = self.GoalFile_staticText.GetLabelText()
+        stop_word_file = self.stop_word_file
+        goal_file = self.goal_file
         margin = self.Margin_spinCtrl.GetValue()
         width = self.Width_spinCtrl.GetValue()
         height = self.Height_spinCtrl.GetValue()
         # font = self.Font_fontPicker.GetSelectedFont()
-        font = self.Font_Choice.GetLabelText()
+        font = self.Font_Choice.GetString(self.Font_Choice.GetCurrentSelection())
+        print "font:",str(font)
         font_max = self.MaxFont_spinCtrl.GetValue()
         font_min = self.MinFont_spinCtrl.GetValue()
-        bg_color = self.BG_Color_colourPicker.GetColour()
+        bg_color = tuple(self.BG_Color_colourPicker.GetColour())
         return stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color
+    def update_Choice(self):
+        pass
 
+        folder_list = os.listdir(gl.CWD+"\\data\\font\\")
+        font_Choices=[]
+        for i in folder_list:
+            if i.endswith(".ttf"):
+                font_Choices.append(i[:-4])
+        self.Font_Choice.Clear()
+
+        self.Font_Choice.AppendItems([i for i in font_Choices])
+        self.Font_Choice.SetSelection(0)
+        print "font update"
+        return font_Choices

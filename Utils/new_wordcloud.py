@@ -15,7 +15,7 @@ import cStringIO
 class MyWordCloud(object):
     def __init__(self):
         self.stopwords = {}
-        self.seg_list ={}
+        self.seg_list =[]
         self.m_wordcloud = None
 
     def StopWord(self,filename):
@@ -30,9 +30,9 @@ class MyWordCloud(object):
         return self.stopwords
 
 
-    def WordCut(self,stopwords,inputfile):
+    def WordCut(self,stopwords, inputfile):
         # pass
-        with open (u'data/资本论.txt') as f:
+        with open (inputfile) as f:
 
             text = f.readlines()
             text = r' '.join(text)
@@ -44,22 +44,25 @@ class MyWordCloud(object):
             self.seg_list = [i for i in self.seg_list if i != u' ']
 
             self.seg_list = r' '.join(self.seg_list)
+
         return self.seg_list
 
     def GenWordCloud(self,
-                     seg_list,
-                     font_path='font/hysj.ttf',
+                     seg_list = None,
+                     font_path=None,
                      background_color="black",
                      margin=5,
-                     width=1800, height=800):
+                     width=1800, height=800,flag=1):
         # pass
         self.m_wordcloud = WordCloud(font_path=font_path,
                               background_color=background_color,
                               margin=margin,
                               width=width,
                               height=height)
-
-        self.m_wordcloud = self.m_wordcloud.generate(seg_list)
+        if flag==0:
+            self.m_wordcloud = self.m_wordcloud.generate_from_frequencies(seg_list)
+        else :
+            self.m_wordcloud = self.m_wordcloud.generate(seg_list)
         return self.m_wordcloud
 
     # def Show(self,wordcloud = self.m_wordcloud):

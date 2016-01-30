@@ -26,10 +26,16 @@ class MyApp(wx.App):
         return True
 
     def OnExit(self):
-        try:
-            pass
-        except:
-            pass
+        catch_folder = gl.CWD+"\\data\\.catch"
+        if os.path.exists(catch_folder):
+            # os.removedirs("Data\\cleaned")
+            try:
+                __import__('shutil').rmtree(catch_folder)
+                os.mkdir(catch_folder)
+            except Exception , e:
+                print e
+        else:
+            os.mkdir(catch_folder)
 
 
 class MyFrame(wx.Frame):

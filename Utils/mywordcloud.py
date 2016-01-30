@@ -47,6 +47,7 @@ print u"开始生成词云······"
 # wordcloud = WordCloud(max_font_size=40, relative_scaling=.5)
 wordcloud = WordCloud(font_path='font/hysj.ttf',    background_color="black",   margin=5, width=1800, height=800) 
 
+wordcloud.generate_from_frequencies()
 wordcloud = wordcloud.generate(seg_list)
 
 #画图

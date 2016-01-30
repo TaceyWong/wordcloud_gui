@@ -28,4 +28,7 @@ class MyHelp(wx.Panel):
     def __del__(self):
         pass
 
+    def update_Choice(self):
+        pass
+
 
