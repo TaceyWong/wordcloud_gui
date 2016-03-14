@@ -4,7 +4,8 @@
 #界面截图
 
 + 主界面
-![主界面](http://www.baidu.com)
+
+![主界面](img/main.PNG)
 
 + 菜单条目
 
