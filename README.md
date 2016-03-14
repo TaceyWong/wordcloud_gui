@@ -9,12 +9,12 @@
 
 + 菜单条目
 
-![菜单条目](http://www.baidu.com)
+![菜单条目](img/item.PNG)
 
 + 帮助界面
 
-![帮助界面](http://www.baidu.com)
+![帮助界面](img/help.PNG)
 
 + 协议界面
 
-![协议界面](http://www.baidu.com)
+![协议界面](img/lic.PNG)
