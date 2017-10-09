@@ -59,6 +59,7 @@ class LabelBookDemo(wx.Frame):
         self.book = None
         self._oldTextSize = 1.0
 
+
         # self.splitter = wx.SplitterWindow(self, -1, style=wx.SP_3D |
         #                                                   wx.SP_LIVE_UPDATE | wx.SP_3DSASH | wx.SP_BORDER)  #wx.SP_BORDER
         # self.mainpanel = wx.Panel(self.splitter, -1)
@@ -67,7 +68,7 @@ class LabelBookDemo(wx.Frame):
         self.SetProperties()
         self.CreateLabelBook()
         self.DoLayout()
-
+        self.create_menubar()
         # 窗口底部状态栏
         statusbar = self.CreateStatusBar(3, wx.ST_SIZEGRIP)
         statusbar.SetStatusWidths([-2, -1,-1])
@@ -83,6 +84,48 @@ class LabelBookDemo(wx.Frame):
         self.initializing = False
         self.SendSizeEvent()
         self.Bind(LB.EVT_IMAGENOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
+
+    def create_menubar(self):
+        # ("&Color", (
+            # ("&Black", "", self.OnNew, wx.ITEM_RADIO), ("&Red", "", self.OnNew, wx.ITEM_RADIO),
+            # ("&Green", "", self.OnNew, wx.ITEM_RADIO), ("&Blue", "", self.OnNew, wx.ITEM_RADIO)))
+        menu_data = [("&File",(("&New","New Sketch file", self.OnNew),
+                               ("&Open", "Open sketchfile", self.OnOpen),
+                               (" & Save", "Save sketch file", self.OnSave), ("", "", "")
+                       ))]
+        menuBar = wx.MenuBar()
+        for eachMenuData in menu_data:
+            menuLabel = eachMenuData[0]
+            menuItems = eachMenuData[1]
+            menuBar.Append(self.create_menu(menuItems), menuLabel)
+        self.SetMenuBar(menuBar)
+
+    def create_menu(self, menuData):
+        menu = wx.Menu()
+        for eachItem in menuData:
+            if len(eachItem) == 2:
+                label = eachItem[0]
+                subMenu = self.create_menu(eachItem[1])
+                menu.AppendMenu(wx.NewId(), label, subMenu)
+            else:
+                self.createMenuItem(menu, *eachItem)
+        return menu
+
+    def createMenuItem(self, menu, label, status, handler, kind=wx.ITEM_NORMAL):
+        if not label:
+            menu.AppendSeparator()
+            return
+        menuItem = menu.Append(-1, label, status, kind)  # 4 使用kind创建菜单项
+        self.Bind(wx.EVT_MENU, handler, menuItem)
+
+    def OnNew(self, event):
+        pass
+
+    def OnOpen(self, event):
+        pass
+
+    def OnSave(self, event):
+        pass
 
     def OnPageChanged(self,event):
         pass
@@ -115,7 +158,7 @@ class LabelBookDemo(wx.Frame):
 
 
         self.panelsizer = wx.BoxSizer(wx.VERTICAL)
-       
+
 
         self.panelsizer.Add(self.book, 1, wx.EXPAND, 0)
         self.SetSizer(self.panelsizer)
@@ -147,6 +190,7 @@ class LabelBookDemo(wx.Frame):
         self.book.AssignImageList(self.imagelist)
 
         for indx, Class in enumerate(_pages):
+            print indx
             self.book.AddPage(Class(self.book),
                               _pageTexts[indx], True, indx)
 
@@ -208,11 +252,6 @@ class LabelBookDemo(wx.Frame):
 
         self.CreateLabelBook(event.GetInt())
         event.Skip()
-
-
-
-
-
         # self.book.Refresh()
 
 
