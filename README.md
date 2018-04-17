@@ -1,7 +1,9 @@
-# wordcloud_gui
+# WordCloud-Gui
 词云生成工具，桌面GUI软件
 
-#界面截图
+**注意：**由于wxpython的GUI组件跨平台没有100%cover，只能在Windows上正常使用
+
+## 界面截图
 
 + 主界面
 
