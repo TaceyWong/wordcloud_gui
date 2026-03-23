@@ -2,46 +2,43 @@
 
 import wx
 import os
-
-from MyUI.MainFrame import *
-from Utils import gl
-#
 import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
+
+from MyUI.MainFrame import LabelBookDemo
+from Utils import gl
+
 
 class MyApp(wx.App):
+    
     def OnInit(self):
-        
         try:
-            gl.CWD = os.getcwd()
-            print gl.CWD
-        except:
-            pass
-
+            gl.CWD = gl.get_base_dir()
+            print(f"工作目录: {gl.CWD}")
+        except Exception as e:
+            print(f"获取工作目录失败: {e}")
+        
+        gl.ensure_catch_dir()
+        
         self.win = LabelBookDemo(parent=None)
         self.SetTopWindow(self.win)
-        self.win.SetTitle(u"Tacey 词云" )
+        self.win.SetTitle(f"{gl.APP_NAME} v{gl.APP_VERSION}")
         self.win.Show(True)
+        
         return True
-
+    
     def OnExit(self):
-        catch_folder = gl.CWD+"\\data\\.catch"
-        if os.path.exists(catch_folder):
-            # os.removedirs("Data\\cleaned")
-            try:
-                __import__('shutil').rmtree(catch_folder)
-                os.mkdir(catch_folder)
-            except Exception , e:
-                print e
-        else:
-            os.mkdir(catch_folder)
+        gl.cleanup_catch_dir()
+        return 0
 
 
 class MyFrame(wx.Frame):
     pass
 
 
-if __name__ == "__main__":
+def main():
     app = MyApp(redirect=False)
     app.MainLoop()
+
+
+if __name__ == "__main__":
+    main()
