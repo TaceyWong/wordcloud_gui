@@ -2,7 +2,7 @@
 
 import wx
 from Utils import gl, new_wordcloud
-import cStringIO
+import io
 import os
 
 
@@ -256,13 +256,13 @@ class MyText(wx.Panel):
             dlg.Destroy()
             return 1
         wc = new_wordcloud.MyWordCloud()
-        print "构建停词表"
+        print("构建停词表")
         stopwords = wc.StopWord(filename=stop_word_file)
-        print "构建分词表"
+        print("构建分词表")
         seg_list = wc.WordCut(stopwords, goal_file)
-        print "------------------------------------"
-        print type(seg_list)
-        print "-------------------------------------"
+        print("------------------------------------")
+        print(type(seg_list))
+        print("-------------------------------------")
         self.final_pic = wc.GenWordCloud(
                                       seg_list=seg_list,
                                       font_path=gl.CWD+u"//data//font//"+font+".ttf",
@@ -276,9 +276,9 @@ class MyText(wx.Panel):
             imageFile = gl.CWD+"\\data\\.catch\\"+'book_to_file.png'
             data = open(imageFile, "rb").read()
             # convert to a data stream
-            stream = cStringIO.StringIO(data)
+            stream = io.BytesIO(data)
             # convert to a bitmap
-            bmp = wx.BitmapFromImage(wx.ImageFromStream(stream))
+            bmp = wx.Bitmap(wx.Image(stream))
             # show the bitmap, (5, 5) are upper left corner coordinates
             # wx.StaticBitmap(self, -1, bmp, (5, 5))
 
@@ -289,7 +289,7 @@ class MyText(wx.Panel):
             self.PicShow_Bitmap.SetBitmap(bmp)
             # self.PicShow_Bitmap(self, -1, bmp, (10 + bmp.GetWidth(), 5), (bmp.GetWidth(), bmp.GetHeight()))
         except IOError:
-            print "Image file %s not found" % imageFile
+            print("Image file %s not found" % imageFile)
             raise SystemExit
 
         # self.PicShow_Bitmap.SetBitmap()
@@ -347,7 +347,7 @@ class MyText(wx.Panel):
         height = self.Height_spinCtrl.GetValue()
         # font = self.Font_fontPicker.GetSelectedFont()
         font = self.Font_Choice.GetString(self.Font_Choice.GetCurrentSelection())
-        print "font:",str(font)
+        print("font:",str(font))
         font_max = self.MaxFont_spinCtrl.GetValue()
         font_min = self.MinFont_spinCtrl.GetValue()
         bg_color = tuple(self.BG_Color_colourPicker.GetColour())
@@ -364,5 +364,5 @@ class MyText(wx.Panel):
 
         self.Font_Choice.AppendItems([i for i in font_Choices])
         self.Font_Choice.SetSelection(0)
-        print "font update"
+        print("font update")
         return font_Choices

@@ -1,8 +1,9 @@
 # coding:utf-8
 
 import wx
+import wx.adv
 import wx.richtext
-from  Utils import gl
+from Utils import gl
 
 __author__ = 'Tacey Wong'
 __date__ = "2016年元月"
@@ -20,9 +21,9 @@ class MyAbout(wx.Panel):
                                                     wx.TE_READONLY | wx.VSCROLL | wx.HSCROLL | wx.NO_BORDER | wx.WANTS_CHARS)
         bSizer1.Add(self.m_richText1, 1, wx.EXPAND | wx.ALL, 5)
 
-        self.m_hyperlink1 = wx.HyperlinkCtrl(self, wx.ID_ANY, u"Tacey 词云源码网址",
+        self.m_hyperlink1 = wx.adv.HyperlinkCtrl(self, wx.ID_ANY, u"Tacey 词云源码网址",
                                              u"http://www.github.com/iTacey/wordcloud_gui",
-                                             wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE)
+                                             wx.DefaultPosition, wx.DefaultSize, wx.adv.HL_DEFAULT_STYLE)
         bSizer1.Add(self.m_hyperlink1, 0, wx.ALL, 5)
 
         self.SetSizer(bSizer1)
@@ -79,7 +80,7 @@ class MyAbout(wx.Panel):
                 #             if i.startswith("+"):
                 #                 self.m_richText1.WriteText(i[1:])
                 #                 self.m_richText1.Newline()
-                # except Exception,e:
+                # except Exception as e:
                 #     print e
 
 
