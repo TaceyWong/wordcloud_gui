@@ -1,43 +1,40 @@
 # coding:utf-8
 
 import wx
-from Utils import gl, new_wordcloud
-import  cStringIO
+from Utils import gl, new_wordcloud, exporter
+import io
 import os
 
 
-__author__ = 'Tacey Wong'
-
-
-###########################################################################
-## 格式化文本生成词云
-###########################################################################
-
 class MyNormal(wx.Panel):
+    
     def __init__(self, parent):
         wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize,
                           style=wx.TAB_TRAVERSAL)
 
         self.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_INFOBK))
-        self.stop_word_file =None
         self.goal_file = None
         self.final_pic = None
+        self.word_freq = []
+        
+        self.InitUI()
+    
+    def InitUI(self):
         bSizer1 = wx.BoxSizer(wx.VERTICAL)
 
-        sbSizer1 = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, u"词云配置"), wx.HORIZONTAL)
+        sbSizer1 = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "词云配置"), wx.HORIZONTAL)
 
-        sbSizer4 = wx.StaticBoxSizer(wx.StaticBox(sbSizer1.GetStaticBox(), wx.ID_ANY, u"目标文件"), wx.VERTICAL)
+        sbSizer4 = wx.StaticBoxSizer(wx.StaticBox(sbSizer1.GetStaticBox(), wx.ID_ANY, "目标文件"), wx.VERTICAL)
 
         fgSizer4 = wx.FlexGridSizer(0, 2, 0, 0)
         fgSizer4.SetFlexibleDirection(wx.BOTH)
         fgSizer4.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_SPECIFIED)
 
-
-        self.GoalFile_Button = wx.Button(sbSizer4.GetStaticBox(), wx.ID_ANY, u"打开目标文件", wx.DefaultPosition,
+        self.GoalFile_Button = wx.Button(sbSizer4.GetStaticBox(), wx.ID_ANY, "打开目标文件", wx.DefaultPosition,
                                          wx.DefaultSize, 0)
         fgSizer4.Add(self.GoalFile_Button, 0, wx.ALL | wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, 5)
 
-        self.GoalFile_staticText = wx.StaticText(sbSizer4.GetStaticBox(), wx.ID_ANY, u"当前：无", wx.DefaultPosition,
+        self.GoalFile_staticText = wx.StaticText(sbSizer4.GetStaticBox(), wx.ID_ANY, "当前：无", wx.DefaultPosition,
                                                  wx.DefaultSize, 0)
         self.GoalFile_staticText.Wrap(-1)
         self.GoalFile_staticText.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT))
@@ -48,36 +45,36 @@ class MyNormal(wx.Panel):
 
         sbSizer1.Add(sbSizer4, 1, wx.EXPAND, 5)
 
-        sbSizer5 = wx.StaticBoxSizer(wx.StaticBox(sbSizer1.GetStaticBox(), wx.ID_ANY, u"尺寸设置"), wx.VERTICAL)
+        sbSizer5 = wx.StaticBoxSizer(wx.StaticBox(sbSizer1.GetStaticBox(), wx.ID_ANY, "尺寸设置"), wx.VERTICAL)
 
         fgSizer2 = wx.FlexGridSizer(0, 2, 0, 0)
         fgSizer2.SetFlexibleDirection(wx.BOTH)
         fgSizer2.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_SPECIFIED)
 
-        self.Margin_staticText = wx.StaticText(sbSizer5.GetStaticBox(), wx.ID_ANY, u"边距", wx.DefaultPosition,
+        self.Margin_staticText = wx.StaticText(sbSizer5.GetStaticBox(), wx.ID_ANY, "边距", wx.DefaultPosition,
                                                wx.DefaultSize, 0)
         self.Margin_staticText.Wrap(-1)
         fgSizer2.Add(self.Margin_staticText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
-        self.Margin_spinCtrl = wx.SpinCtrl(sbSizer5.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
-                                           wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 50, 0)
+        self.Margin_spinCtrl = wx.SpinCtrl(sbSizer5.GetStaticBox(), wx.ID_ANY, "5", wx.DefaultPosition,
+                                           wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 50, 5)
         fgSizer2.Add(self.Margin_spinCtrl, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
-        self.Width_staticText = wx.StaticText(sbSizer5.GetStaticBox(), wx.ID_ANY, u"宽度", wx.DefaultPosition,
+        self.Width_staticText = wx.StaticText(sbSizer5.GetStaticBox(), wx.ID_ANY, "宽度", wx.DefaultPosition,
                                               wx.DefaultSize, 0)
         self.Width_staticText.Wrap(-1)
         fgSizer2.Add(self.Width_staticText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
-        self.Width_spinCtrl = wx.SpinCtrl(sbSizer5.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
+        self.Width_spinCtrl = wx.SpinCtrl(sbSizer5.GetStaticBox(), wx.ID_ANY, "800", wx.DefaultPosition,
                                           wx.DefaultSize, wx.SP_ARROW_KEYS, 100, 10000, 800)
         fgSizer2.Add(self.Width_spinCtrl, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
-        self.Height_staticText = wx.StaticText(sbSizer5.GetStaticBox(), wx.ID_ANY, u"高度", wx.DefaultPosition,
+        self.Height_staticText = wx.StaticText(sbSizer5.GetStaticBox(), wx.ID_ANY, "高度", wx.DefaultPosition,
                                                wx.DefaultSize, 0)
         self.Height_staticText.Wrap(-1)
         fgSizer2.Add(self.Height_staticText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
-        self.Height_spinCtrl = wx.SpinCtrl(sbSizer5.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
+        self.Height_spinCtrl = wx.SpinCtrl(sbSizer5.GetStaticBox(), wx.ID_ANY, "600", wx.DefaultPosition,
                                            wx.DefaultSize, wx.SP_ARROW_KEYS, 80, 10000, 600)
         fgSizer2.Add(self.Height_spinCtrl, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
@@ -85,13 +82,13 @@ class MyNormal(wx.Panel):
 
         sbSizer1.Add(sbSizer5, 1, wx.EXPAND, 5)
 
-        sbSizer6 = wx.StaticBoxSizer(wx.StaticBox(sbSizer1.GetStaticBox(), wx.ID_ANY, u"字体设置"), wx.VERTICAL)
+        sbSizer6 = wx.StaticBoxSizer(wx.StaticBox(sbSizer1.GetStaticBox(), wx.ID_ANY, "字体设置"), wx.VERTICAL)
 
         fgSizer3 = wx.FlexGridSizer(0, 2, 0, 0)
         fgSizer3.SetFlexibleDirection(wx.BOTH)
         fgSizer3.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_SPECIFIED)
 
-        self.Font_staticText = wx.StaticText(sbSizer6.GetStaticBox(), wx.ID_ANY, u"选择字体", wx.DefaultPosition,
+        self.Font_staticText = wx.StaticText(sbSizer6.GetStaticBox(), wx.ID_ANY, "选择字体", wx.DefaultPosition,
                                              wx.DefaultSize, 0)
         self.Font_staticText.Wrap(-1)
         fgSizer3.Add(self.Font_staticText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT, 5)
@@ -102,31 +99,31 @@ class MyNormal(wx.Panel):
         self.update_Choice()
         fgSizer3.Add(self.Font_Choice, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
-        self.MaxFont_staticText = wx.StaticText(sbSizer6.GetStaticBox(), wx.ID_ANY, u"最大字体", wx.DefaultPosition,
+        self.MaxFont_staticText = wx.StaticText(sbSizer6.GetStaticBox(), wx.ID_ANY, "最大字体", wx.DefaultPosition,
                                                 wx.DefaultSize, 0)
         self.MaxFont_staticText.Wrap(-1)
         fgSizer3.Add(self.MaxFont_staticText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT, 5)
 
-        self.MaxFont_spinCtrl = wx.SpinCtrl(sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
-                                            wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 40, 10)
+        self.MaxFont_spinCtrl = wx.SpinCtrl(sbSizer6.GetStaticBox(), wx.ID_ANY, "40", wx.DefaultPosition,
+                                            wx.DefaultSize, wx.SP_ARROW_KEYS, 10, 200, 40)
         fgSizer3.Add(self.MaxFont_spinCtrl, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
-        self.MinFont_staticText = wx.StaticText(sbSizer6.GetStaticBox(), wx.ID_ANY, u"最小字体", wx.DefaultPosition,
+        self.MinFont_staticText = wx.StaticText(sbSizer6.GetStaticBox(), wx.ID_ANY, "最小字体", wx.DefaultPosition,
                                                 wx.DefaultSize, 0)
         self.MinFont_staticText.Wrap(-1)
         fgSizer3.Add(self.MinFont_staticText, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT, 5)
 
-        self.MinFont_spinCtrl = wx.SpinCtrl(sbSizer6.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition,
-                                            wx.DefaultSize, wx.SP_ARROW_KEYS, 0, 40, 5)
+        self.MinFont_spinCtrl = wx.SpinCtrl(sbSizer6.GetStaticBox(), wx.ID_ANY, "10", wx.DefaultPosition,
+                                            wx.DefaultSize, wx.SP_ARROW_KEYS, 1, 100, 10)
         fgSizer3.Add(self.MinFont_spinCtrl, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
 
         sbSizer6.Add(fgSizer3, 1, wx.EXPAND, 5)
 
         sbSizer1.Add(sbSizer6, 1, wx.EXPAND, 5)
 
-        sbSizer7 = wx.StaticBoxSizer(wx.StaticBox(sbSizer1.GetStaticBox(), wx.ID_ANY, u"颜色设置"), wx.VERTICAL)
+        sbSizer7 = wx.StaticBoxSizer(wx.StaticBox(sbSizer1.GetStaticBox(), wx.ID_ANY, "颜色设置"), wx.VERTICAL)
 
-        self.BG_Color_staticText = wx.StaticText(sbSizer7.GetStaticBox(), wx.ID_ANY, u"选择背景颜色", wx.DefaultPosition,
+        self.BG_Color_staticText = wx.StaticText(sbSizer7.GetStaticBox(), wx.ID_ANY, "选择背景颜色", wx.DefaultPosition,
                                                  wx.DefaultSize, 0)
         self.BG_Color_staticText.Wrap(-1)
         sbSizer7.Add(self.BG_Color_staticText, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL, 5)
@@ -140,7 +137,7 @@ class MyNormal(wx.Panel):
 
         bSizer1.Add(sbSizer1, 1, wx.EXPAND, 5)
 
-        sbSizer3 = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, u"词云生成"), wx.VERTICAL)
+        sbSizer3 = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "词云生成"), wx.VERTICAL)
 
         fgSizer1 = wx.FlexGridSizer(0, 2, 0, 0)
         fgSizer1.SetFlexibleDirection(wx.BOTH)
@@ -148,20 +145,22 @@ class MyNormal(wx.Panel):
 
         bSizer2 = wx.BoxSizer(wx.VERTICAL)
 
-        self.GenWordCloud_Button = wx.Button(sbSizer3.GetStaticBox(), wx.ID_ANY, u"词云生成", wx.DefaultPosition,
+        self.GenWordCloud_Button = wx.Button(sbSizer3.GetStaticBox(), wx.ID_ANY, "词云生成", wx.DefaultPosition,
                                              wx.DefaultSize, 0)
         bSizer2.Add(self.GenWordCloud_Button, 0, wx.ALL, 5)
 
-        self.Save_Button = wx.Button(sbSizer3.GetStaticBox(), wx.ID_ANY, u"保存词云", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.Save_Button = wx.Button(sbSizer3.GetStaticBox(), wx.ID_ANY, "保存词云", wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer2.Add(self.Save_Button, 0, wx.ALL, 5)
+        
+        self.Export_Button = wx.Button(sbSizer3.GetStaticBox(), wx.ID_ANY, "导出报告", wx.DefaultPosition, wx.DefaultSize, 0)
+        bSizer2.Add(self.Export_Button, 0, wx.ALL, 5)
 
         fgSizer1.Add(bSizer2, 1, wx.EXPAND, 5)
 
-        sbSizer9 = wx.StaticBoxSizer(wx.StaticBox(sbSizer3.GetStaticBox(), wx.ID_ANY, u"词云预览"), wx.VERTICAL)
+        sbSizer9 = wx.StaticBoxSizer(wx.StaticBox(sbSizer3.GetStaticBox(), wx.ID_ANY, "词云预览"), wx.VERTICAL)
 
         self.PicShow_Bitmap = wx.StaticBitmap(sbSizer9.GetStaticBox(), wx.ID_ANY,
-                                              wx.Bitmap(u"C:\\Users\\Administrator\\Desktop\\论文资料\\test.png",
-                                                        wx.BITMAP_TYPE_ANY), wx.DefaultPosition, wx.DefaultSize, 0)
+                                              wx.Bitmap(400, 300), wx.DefaultPosition, wx.DefaultSize, 0)
         sbSizer9.Add(self.PicShow_Bitmap, 1, wx.ALL | wx.EXPAND, 5)
 
         fgSizer1.Add(sbSizer9, 1, wx.EXPAND, 5)
@@ -173,172 +172,191 @@ class MyNormal(wx.Panel):
         self.SetSizer(bSizer1)
         self.Layout()
 
-        # Connect Events
-
         self.GoalFile_Button.Bind(wx.EVT_BUTTON, self.GoalFile_ButtonOnButtonClick)
         self.GenWordCloud_Button.Bind(wx.EVT_BUTTON, self.GenWordCloud_ButtonOnButtonClick)
         self.Save_Button.Bind(wx.EVT_BUTTON, self.Save_ButtonOnButtonClick)
-
-    def __del__(self):
-        pass
-
-
-    # Virtual event handlers, overide them in your derived class
-
-
+        self.Export_Button.Bind(wx.EVT_BUTTON, self.Export_ButtonOnButtonClick)
 
     def GoalFile_ButtonOnButtonClick(self, event):
-        event.Skip()
-        wildcard = u"TXT纯文本 (*.txt)|*.txt"
+        wildcard = "词频文件 (*.txt)|*.txt|CSV文件 (*.csv)|*.csv"
 
         dlg = wx.FileDialog(
-            self, message=u"选取词云生成目标文档",
+            self, message="选取词频文件（格式：词语:频次）",
             defaultDir=gl.CWD,
             defaultFile="",
             wildcard=wildcard,
-            style=wx.OPEN | wx.CHANGE_DIR  # | wx.MULTIPLE
+            style=wx.FD_OPEN | wx.FD_CHANGE_DIR
         )
 
-        # Show the dialog and retrieve the user response. If it is the OK response,
-        # process the data.
         if dlg.ShowModal() == wx.ID_OK:
-            # This returns a Python list of files that were selected.
-            path = dlg.GetPath()  # GetPaths()
+            path = dlg.GetPath()
             self.goal_file = path
-            self.GoalFile_staticText.SetLabelText(path.split("\\")[-1])
+            self.GoalFile_staticText.SetLabelText(os.path.basename(path))
 
-        #
         dlg.Destroy()
 
-
     def GenWordCloud_ButtonOnButtonClick(self, event):
-        event.Skip()
-        stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color = self.GetConf()
-        print stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color
-        if goal_file == None :
-            dlg = wx.MessageDialog(self,u"请先选取目标文档",
-                                u"文件缺失",
-                               wx.OK | wx.ICON_INFORMATION#wx.ICON_ERROR
-                               #wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
-                               )
+        goal_file, margin, width, height, font, font_max, font_min, bg_color = self.GetConf()
+        
+        if goal_file is None:
+            dlg = wx.MessageDialog(self, "请先选取词频文件",
+                                "文件缺失",
+                               wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-            return 1
-        wc = new_wordcloud.MyWordCloud()
-        seg_list = []
-        with open(goal_file) as f:
-            for i in f.readlines():
-                try:
-                    tmp = i.rstrip()
-                    print tmp
-                    tmp = tmp.split(":")
-                    print tmp
-                    seg_list.append((tmp[0].decode("utf-8"),int(tmp[-1])))
-                except Exception, e:
-                    print e
-
-
-        print seg_list
-        self.final_pic = wc.GenWordCloud(
-                                      seg_list=seg_list,
-                                      font_path=gl.CWD+u"//data//font//"+font+".ttf",
-                                      background_color=bg_color,
-                                      margin=margin,
-                                      width=width, height=height,flag=0)
-
-        self.final_pic.to_file(gl.CWD+"\\data\\.catch\\"+"book_to_file.png")
+            return
+        
+        word_freq = []
         try:
-
-            imageFile = gl.CWD+"\\data\\.catch\\"+'book_to_file.png'
-            data = open(imageFile, "rb").read()
-            # convert to a data stream
-            stream = cStringIO.StringIO(data)
-            # convert to a bitmap
-            bmp = wx.BitmapFromImage(wx.ImageFromStream(stream))
-            # show the bitmap, (5, 5) are upper left corner coordinates
-            # wx.StaticBitmap(self, -1, bmp, (5, 5))
-
-            # alternate (simpler) way to load and display a jpg image from a file
-            # actually you can load .jpg  .png  .bmp  or .gif files
-            # jpg1 = wx.Image(imageFile, wx.BITMAP_TYPE_ANY).ConvertToBitmap()
-            # bitmap upper left corner is in the position tuple (x, y) = (5, 5)
-            self.PicShow_Bitmap.SetBitmap(bmp)
-            # self.PicShow_Bitmap(self, -1, bmp, (10 + bmp.GetWidth(), 5), (bmp.GetWidth(), bmp.GetHeight()))
-        except IOError:
-            print "Image file %s not found" % imageFile
-            raise SystemExit
-
-        # self.PicShow_Bitmap.SetBitmap()
-
-        dlg = wx.MessageDialog(self, u'生成成功！',
-                               u'处理结果!',
-                               wx.OK | wx.ICON_INFORMATION  # wx.ICON_ERROR
-                               # wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
+            with open(goal_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if ':' in line:
+                        parts = line.split(':')
+                        if len(parts) >= 2:
+                            word = parts[0].strip()
+                            try:
+                                freq = int(parts[-1].strip())
+                                word_freq.append((word, freq))
+                            except ValueError:
+                                continue
+        except UnicodeDecodeError:
+            with open(goal_file, 'r', encoding='gbk') as f:
+                for line in f:
+                    line = line.strip()
+                    if ':' in line:
+                        parts = line.split(':')
+                        if len(parts) >= 2:
+                            word = parts[0].strip()
+                            try:
+                                freq = int(parts[-1].strip())
+                                word_freq.append((word, freq))
+                            except ValueError:
+                                continue
+        
+        if not word_freq:
+            dlg = wx.MessageDialog(self, "无法解析词频文件，请检查格式",
+                                "解析错误",
+                               wx.OK | wx.ICON_ERROR)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        
+        self.word_freq = word_freq
+        
+        wc = new_wordcloud.MyWordCloud()
+        font_path = gl.get_font_path(font) if font else None
+        
+        print("生成词云")
+        self.final_pic = wc.generate_wordcloud(
+            word_freq=word_freq,
+            font_path=font_path,
+            background_color=bg_color,
+            margin=margin,
+            width=width, 
+            height=height,
+            max_font_size=font_max,
+            min_font_size=font_min
         )
+
+        output_path = os.path.join(gl.get_catch_dir(), "normal_wordcloud.png")
+        self.final_pic.to_file(output_path)
+        
+        try:
+            with open(output_path, "rb") as f:
+                img_data = f.read()
+            stream = io.BytesIO(img_data)
+            bmp = wx.Bitmap(wx.Image(stream, wx.BITMAP_TYPE_PNG))
+            self.PicShow_Bitmap.SetBitmap(bmp)
+        except Exception as e:
+            print(f"显示图片失败: {e}")
+
+        dlg = wx.MessageDialog(self, '生成成功！',
+                               '处理结果!',
+                               wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
     def Save_ButtonOnButtonClick(self, event):
-        event.Skip()
-        if self.final_pic == None:
-            dlg = wx.MessageDialog(self, u'您尚未生成词云！',
-                               u'错误信息!',
-                               wx.OK | wx.ICON_INFORMATION  # wx.ICON_ERROR
-                               # wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
-                                )
+        if self.final_pic is None:
+            dlg = wx.MessageDialog(self, '您尚未生成词云！',
+                               '错误信息!',
+                               wx.OK | wx.ICON_INFORMATION)
             dlg.ShowModal()
             dlg.Destroy()
-            return 1
+            return
+        
+        wildcard = "PNG图片 (*.png)|*.png|JPG图片 (*.jpg)|*.jpg|PDF文件 (*.pdf)|*.pdf|SVG文件 (*.svg)|*.svg"
         dlg = wx.FileDialog(
-            self, message=u"保存单词云，请选择合适的格式", defaultDir=gl.CWD,
-            defaultFile=u"MyWordCloud", wildcard=u"PNG图片 (*.png)|*.png", style=wx.SAVE
+            self, message="保存单词云，请选择合适的格式", defaultDir=gl.CWD,
+            defaultFile="MyWordCloud", wildcard=wildcard, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
         )
 
-        # dlg.SetFilterIndex(2)
-
-        # Show the dialog and retrieve the user response. If it is the OK response,
-        # process the data.
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
-            self.final_pic.to_file(path)
-        else:
-            return 0
+            exporter_inst = exporter.WordCloudExporter()
+            exporter_inst.export_image(self.final_pic, path, dpi=300)
 
-        #
         dlg.Destroy()
-        dlg = wx.MessageDialog(self, u'保存完成！',
-                               u'处理结果!',
-                               wx.OK | wx.ICON_INFORMATION  # wx.ICON_ERROR
-                               # wx.YES_NO | wx.NO_DEFAULT | wx.CANCEL | wx.ICON_INFORMATION
-        )
+        dlg = wx.MessageDialog(self, '保存完成！',
+                               '处理结果!',
+                               wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
+    def Export_ButtonOnButtonClick(self, event):
+        if not self.word_freq:
+            dlg = wx.MessageDialog(self, '请先生成词云！',
+                               '提示',
+                               wx.OK | wx.ICON_INFORMATION)
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        
+        wildcard = "Markdown文件 (*.md)|*.md|HTML文件 (*.html)|*.html"
+        dlg = wx.FileDialog(self, message="导出报告",
+                           defaultDir=gl.CWD,
+                           defaultFile="wordcloud_report",
+                           wildcard=wildcard,
+                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            ext = os.path.splitext(path)[1].lower()
+            
+            try:
+                report_gen = exporter.ReportGenerator(gl.CWD)
+                
+                if ext == '.html':
+                    report_gen.generate_html_report(self.word_freq, output_path=path, title='词云分析报告')
+                else:
+                    report_gen.generate_markdown_report(self.word_freq, output_path=path, title='词云分析报告')
+                
+                dlg2 = wx.MessageDialog(self, f'报告已生成: {path}', '完成', wx.OK | wx.ICON_INFORMATION)
+                dlg2.ShowModal()
+                dlg2.Destroy()
+            except Exception as e:
+                dlg2 = wx.MessageDialog(self, f'生成报告失败: {str(e)}', '错误', wx.OK | wx.ICON_ERROR)
+                dlg2.ShowModal()
+                dlg2.Destroy()
+        
+        dlg.Destroy()
+
     def GetConf(self):
-        pass
-        stop_word_file = self.stop_word_file
         goal_file = self.goal_file
         margin = self.Margin_spinCtrl.GetValue()
         width = self.Width_spinCtrl.GetValue()
         height = self.Height_spinCtrl.GetValue()
-        # font = self.Font_fontPicker.GetSelectedFont()
         font = self.Font_Choice.GetString(self.Font_Choice.GetCurrentSelection())
-        print "font:",str(font)
         font_max = self.MaxFont_spinCtrl.GetValue()
         font_min = self.MinFont_spinCtrl.GetValue()
-        bg_color = tuple(self.BG_Color_colourPicker.GetColour())
-        return stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color
+        bg_color = self.BG_Color_colourPicker.GetColour().GetAsString(wx.C2S_HTML_SYNTAX)
+        return goal_file, margin, width, height, font, font_max, font_min, bg_color
+    
     def update_Choice(self):
-        pass
-
-        folder_list = os.listdir(gl.CWD+"\\data\\font\\")
-        font_Choices=[]
-        for i in folder_list:
-            if i.endswith(".ttf"):
-                font_Choices.append(i[:-4])
+        fonts = gl.get_available_fonts()
         self.Font_Choice.Clear()
-
-        self.Font_Choice.AppendItems([i for i in font_Choices])
-        self.Font_Choice.SetSelection(0)
-        print "font update"
-        return font_Choices
+        if fonts:
+            self.Font_Choice.AppendItems(fonts)
+            self.Font_Choice.SetSelection(0)
+        return fonts
