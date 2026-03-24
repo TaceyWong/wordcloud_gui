@@ -1,6 +1,17 @@
 #coding:utf-8
 
+from __future__ import print_function, unicode_literals
 import wx
+import wx.richtext
+
+# wxPython 4 兼容性：HyperlinkCtrl 在 wx.adv 模块中
+try:
+    import wx.adv
+    HyperlinkCtrl = wx.adv.HyperlinkCtrl
+    HL_DEFAULT_STYLE = wx.adv.HL_DEFAULT_STYLE
+except ImportError:
+    HyperlinkCtrl = wx.HyperlinkCtrl
+    HL_DEFAULT_STYLE = wx.HL_DEFAULT_STYLE
 
 __author__ = 'Tacey Wong'
 __date__   = "2016年元月"
@@ -18,8 +29,8 @@ class MyHelp(wx.Panel):
                                                     wx.TE_READONLY| wx.VSCROLL | wx.HSCROLL | wx.NO_BORDER | wx.WANTS_CHARS)
         bSizer1.Add(self.m_richText1, 1, wx.EXPAND | wx.ALL, 5)
 
-        self.m_hyperlink1 = wx.HyperlinkCtrl(self, wx.ID_ANY, u"Tacey 词云在线帮助文档", u"http://www.github.com/iTacey/wordcloud_gui/doc/online/help",
-                                             wx.DefaultPosition, wx.DefaultSize, wx.HL_DEFAULT_STYLE)
+        self.m_hyperlink1 = HyperlinkCtrl(self, wx.ID_ANY, u"Tacey 词云在线帮助文档", u"http://www.github.com/iTacey/wordcloud_gui/doc/online/help",
+                                             wx.DefaultPosition, wx.DefaultSize, HL_DEFAULT_STYLE)
         bSizer1.Add(self.m_hyperlink1, 0, wx.ALL, 5)
 
         self.SetSizer(bSizer1)
