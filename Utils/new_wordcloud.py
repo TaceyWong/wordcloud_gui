@@ -1,14 +1,23 @@
 #coding: utf-8
 
+from __future__ import print_function, unicode_literals
 import os
+import sys
 from os import path
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud, STOPWORDS
 import jieba
-import cStringIO
-# stream = cStringIO.StringIO(GetMondrianData())
+
+# Python 2/3 兼容性
+if sys.version_info[0] == 2:
+    import cStringIO
+    StringIO = cStringIO.StringIO
+else:
+    from io import BytesIO as StringIO
+
+# stream = StringIO(GetMondrianData())
 # return wx.ImageFromStream(stream)
 
 
@@ -20,11 +29,12 @@ class MyWordCloud(object):
 
     def StopWord(self,filename):
         # pass
-        f = open(filename, 'r')
+        import codecs
+        f = codecs.open(filename, 'r', encoding='utf-8')
         line = f.readline().rstrip()#strip()
         while line:
             self.stopwords.setdefault(line, 0)
-            self.stopwords[line.decode('utf-8')] = 1
+            self.stopwords[line] = 1
             line = f.readline().rstrip()
         f.close()
         return self.stopwords
@@ -32,10 +42,9 @@ class MyWordCloud(object):
 
     def WordCut(self,stopwords, inputfile):
         # pass
-        with open (inputfile) as f:
-
-            text = f.readlines()
-            text = r' '.join(text)
+        import codecs
+        with codecs.open(inputfile, 'r', encoding='utf-8') as f:
+            text = f.read()
 
             seg_generator = jieba.cut(text)
 

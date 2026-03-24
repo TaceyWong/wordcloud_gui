@@ -1,9 +1,18 @@
 # coding:utf-8
 
+from __future__ import print_function, unicode_literals
 import wx
-from Utils import gl, new_wordcloud
-import  cStringIO
+import sys
 import os
+
+from Utils import gl, new_wordcloud
+
+# Python 2/3 兼容性
+if sys.version_info[0] == 2:
+    import cStringIO
+    StringIO = cStringIO.StringIO
+else:
+    from io import BytesIO as StringIO
 
 
 __author__ = 'Tacey Wong'
@@ -244,7 +253,7 @@ class MyWeb(wx.Panel):
     def GenWordCloud_ButtonOnButtonClick(self, event):
         event.Skip()
         stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color = self.GetConf()
-        print stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color
+        print(stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color)
 
         if stop_word_file == None or goal_file == None :
             dlg = wx.MessageDialog(self,u"请先选取停词表和目标文档",
@@ -257,14 +266,15 @@ class MyWeb(wx.Panel):
             return 1
         wc = new_wordcloud.MyWordCloud()
         from Utils import cleaner
-        html_text = cleaner.clean_html(open(goal_file).read())
+        import codecs
+        html_text = cleaner.clean_html(codecs.open(goal_file, 'r', encoding='utf-8').read())
         output_file_name = gl.CWD+"\\data\\.catch\\tmp_file.txt"
         goal_file = output_file_name
-        output_file_id = open(output_file_name,'w')
+        output_file_id = codecs.open(output_file_name, 'w', encoding='utf-8')
         try:
             output_file_id.write(html_text.strip())
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
         output_file_id.close()
         stop_word_file = output_file_name
         stopwords = wc.StopWord(filename=stop_word_file)
@@ -282,9 +292,12 @@ class MyWeb(wx.Panel):
             imageFile = gl.CWD+"\\data\\.catch\\"+'book_to_file.png'
             data = open(imageFile, "rb").read()
             # convert to a data stream
-            stream = cStringIO.StringIO(data)
+            stream = StringIO(data)
             # convert to a bitmap
-            bmp = wx.BitmapFromImage(wx.ImageFromStream(stream))
+            if sys.version_info[0] == 2:
+                bmp = wx.BitmapFromImage(wx.ImageFromStream(stream))
+            else:
+                bmp = wx.Bitmap(wx.Image(stream))
             # show the bitmap, (5, 5) are upper left corner coordinates
             # wx.StaticBitmap(self, -1, bmp, (5, 5))
 
@@ -295,7 +308,7 @@ class MyWeb(wx.Panel):
             self.PicShow_Bitmap.SetBitmap(bmp)
             # self.PicShow_Bitmap(self, -1, bmp, (10 + bmp.GetWidth(), 5), (bmp.GetWidth(), bmp.GetHeight()))
         except IOError:
-            print "Image file %s not found" % imageFile
+            print("Image file %s not found" % imageFile)
             raise SystemExit
 
         # self.PicShow_Bitmap.SetBitmap()
@@ -353,7 +366,7 @@ class MyWeb(wx.Panel):
         height = self.Height_spinCtrl.GetValue()
         # font = self.Font_fontPicker.GetSelectedFont()
         font = self.Font_Choice.GetString(self.Font_Choice.GetCurrentSelection())
-        print "font:",str(font)
+        print("font:", str(font))
         font_max = self.MaxFont_spinCtrl.GetValue()
         font_min = self.MinFont_spinCtrl.GetValue()
         bg_color = tuple(self.BG_Color_colourPicker.GetColour())
@@ -370,5 +383,5 @@ class MyWeb(wx.Panel):
 
         self.Font_Choice.AppendItems([i for i in font_Choices])
         self.Font_Choice.SetSelection(0)
-        print "font update"
+        print("font update")
         return font_Choices

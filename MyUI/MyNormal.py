@@ -1,9 +1,18 @@
 # coding:utf-8
 
+from __future__ import print_function, unicode_literals
 import wx
-from Utils import gl, new_wordcloud
-import  cStringIO
+import sys
 import os
+
+from Utils import gl, new_wordcloud
+
+# Python 2/3 兼容性
+if sys.version_info[0] == 2:
+    import cStringIO
+    StringIO = cStringIO.StringIO
+else:
+    from io import BytesIO as StringIO
 
 
 __author__ = 'Tacey Wong'
@@ -214,7 +223,7 @@ class MyNormal(wx.Panel):
     def GenWordCloud_ButtonOnButtonClick(self, event):
         event.Skip()
         stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color = self.GetConf()
-        print stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color
+        print(stop_word_file, goal_file, margin, width, height, font, font_max, font_min, bg_color)
         if goal_file == None :
             dlg = wx.MessageDialog(self,u"请先选取目标文档",
                                 u"文件缺失",
@@ -226,19 +235,20 @@ class MyNormal(wx.Panel):
             return 1
         wc = new_wordcloud.MyWordCloud()
         seg_list = []
-        with open(goal_file) as f:
+        import codecs
+        with codecs.open(goal_file, 'r', encoding='utf-8') as f:
             for i in f.readlines():
                 try:
                     tmp = i.rstrip()
-                    print tmp
+                    print(tmp)
                     tmp = tmp.split(":")
-                    print tmp
-                    seg_list.append((tmp[0].decode("utf-8"),int(tmp[-1])))
-                except Exception, e:
-                    print e
+                    print(tmp)
+                    seg_list.append((tmp[0], int(tmp[-1])))
+                except Exception as e:
+                    print(e)
 
 
-        print seg_list
+        print(seg_list)
         self.final_pic = wc.GenWordCloud(
                                       seg_list=seg_list,
                                       font_path=gl.CWD+u"//data//font//"+font+".ttf",
@@ -252,9 +262,12 @@ class MyNormal(wx.Panel):
             imageFile = gl.CWD+"\\data\\.catch\\"+'book_to_file.png'
             data = open(imageFile, "rb").read()
             # convert to a data stream
-            stream = cStringIO.StringIO(data)
+            stream = StringIO(data)
             # convert to a bitmap
-            bmp = wx.BitmapFromImage(wx.ImageFromStream(stream))
+            if sys.version_info[0] == 2:
+                bmp = wx.BitmapFromImage(wx.ImageFromStream(stream))
+            else:
+                bmp = wx.Bitmap(wx.Image(stream))
             # show the bitmap, (5, 5) are upper left corner coordinates
             # wx.StaticBitmap(self, -1, bmp, (5, 5))
 
@@ -265,7 +278,7 @@ class MyNormal(wx.Panel):
             self.PicShow_Bitmap.SetBitmap(bmp)
             # self.PicShow_Bitmap(self, -1, bmp, (10 + bmp.GetWidth(), 5), (bmp.GetWidth(), bmp.GetHeight()))
         except IOError:
-            print "Image file %s not found" % imageFile
+            print("Image file %s not found" % imageFile)
             raise SystemExit
 
         # self.PicShow_Bitmap.SetBitmap()
@@ -323,7 +336,7 @@ class MyNormal(wx.Panel):
         height = self.Height_spinCtrl.GetValue()
         # font = self.Font_fontPicker.GetSelectedFont()
         font = self.Font_Choice.GetString(self.Font_Choice.GetCurrentSelection())
-        print "font:",str(font)
+        print("font:", str(font))
         font_max = self.MaxFont_spinCtrl.GetValue()
         font_min = self.MinFont_spinCtrl.GetValue()
         bg_color = tuple(self.BG_Color_colourPicker.GetColour())
@@ -340,5 +353,5 @@ class MyNormal(wx.Panel):
 
         self.Font_Choice.AppendItems([i for i in font_Choices])
         self.Font_Choice.SetSelection(0)
-        print "font update"
+        print("font update")
         return font_Choices

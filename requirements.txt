@@ -1,0 +1,30 @@
+# WordCloud GUI 依赖列表
+# 安装命令: pip install -r requirements.txt
+
+# GUI框架
+wxPython>=4.0.0
+
+# 词云生成
+wordcloud>=1.8.0
+
+# 中文分词
+jieba>=0.42.0
+
+# 数据处理
+pandas>=1.0.0
+openpyxl>=3.0.0
+
+# 可视化
+matplotlib>=3.0.0
+
+# 图像处理
+Pillow>=8.0.0
+
+# 数值计算
+numpy>=1.19.0
+
+# PDF导出
+reportlab>=3.5.0
+
+# 其他工具
+requests>=2.25.0
